@@ -1,4 +1,4 @@
-export namespace Prop2AActions {
+export namespace Prop2aActions {
   export enum Type {
     RANDOMIZE = "@app/prop2a/RANDOMIZE",
   }

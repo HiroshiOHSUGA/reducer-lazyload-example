@@ -1,4 +1,3 @@
-//tslint:disable:strict-boolean-expressions boiler plateのサンプルコードなので無視
 import { routerMiddleware } from "connected-react-router";
 import { History } from "history";
 import { applyMiddleware, createStore, Reducer, Store } from "redux";
@@ -7,15 +6,15 @@ import {
   recursiveCombineReducers,
   ReducerRegistry,
 } from "app/lib/ReducerRegistry";
-import { getInitialState, getReducerRegistory, initialReducersMap } from "./reducers";
+import { getInitialState, getReducerRegistry, initialReducersMap } from "./reducers";
 import { RootState } from "./state";
 
-export type AddToStore = (request: IPrepareRequest) => Promise<void>;
+export type RequireReducer = (request: IPrepareRequest) => Promise<void>;
 
 interface IReturnObject {
   store: Store<RootState>;
 
-  addToStore: AddToStore;
+  requireReducer: RequireReducer;
 
   initializeReducers(): Promise<void>;
 }
@@ -24,7 +23,7 @@ export function configureStore(
   history: History,
   preloadState: RootState = getInitialState(),
 ): IReturnObject {
-  const reducerRegistry = getReducerRegistory(history);
+  const reducerRegistry = getReducerRegistry(history);
   const middleware = applyMiddleware(routerMiddleware(history));
 
   const initialReducer = () => {
@@ -33,7 +32,7 @@ export function configureStore(
 
   const store: Store<RootState> = createStore(initialReducer, preloadState, middleware);
 
-  const addToStore = async (request: IPrepareRequest) => {
+  const requireReducer = async (request: IPrepareRequest) => {
     await reducerRegistry.prepare(request);
     store.replaceReducer(getReducers(reducerRegistry));
   };
@@ -41,9 +40,9 @@ export function configureStore(
   return {
     store,
     async initializeReducers() {
-      return addToStore(initialReducersMap);
+      return requireReducer(initialReducersMap);
     },
-    addToStore,
+    requireReducer,
   };
 }
 
